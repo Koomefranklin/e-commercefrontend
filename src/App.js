@@ -63,8 +63,8 @@ const App = ({ isLoggedIn, loginUser, logoutUser }) => {
 	return (
 		<Router>
 			{isLoggedIn ? (
-				<div className='grid min-h-screen w-full'>
-					<div className='grid sticky h-fit top-0 left-0 w-full'>
+				<div className='grid min-h-screen w-full bg-gray-400 dark:bg-gray-700'>
+					<div className='grid sticky h-fit top-0 left-0 w-full text-white'>
 						<div className='grid grid-flow-col  p-2 border-b bg-black'>
 							<div className='grid justify-start'>FullStack Ecommerce</div>
 							<div className='grid justify-end grid-flow-col gap-3'>

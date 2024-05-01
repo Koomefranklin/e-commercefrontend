@@ -108,7 +108,7 @@ const Product = ({
 						<Link
 							key={product.id}
 							to={`/product/${product.id}`}
-							className='bg-black rounded text-sm border-x-2 border-x-gray-800 grid p-3 lg:w-80 rounded-md mb-10'>
+							className='rounded text-sm border-x-2 border-x-gray-800 grid p-3 lg:w-80 rounded-md mb-10'>
 							<img
 								src={`/images/${product.image}`}
 								alt={product.name}
