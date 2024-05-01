@@ -1,5 +1,5 @@
 export const loginUser = (token) => {
-	sessionStorage.setItem('token', token);
+	sessionStorage.setItem('token', JSON.stringify(token));
 
 	return {
 		type: 'LOGIN_USER',

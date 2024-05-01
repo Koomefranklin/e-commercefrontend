@@ -1,58 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { FaCartPlus } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { fetchProducts } from '../../Actions/productActions';
+import { addToCart, removeFromCart } from '../../Actions/cartActions';
 
-export default function ProductsList() {
-	const token = JSON.parse(sessionStorage.getItem('token')).access;
-	const [products, setProducts] = useState([]);
-
+const ProductList = ({
+	products,
+	fetchProducts,
+	cartItems,
+	addToCart,
+	removeFromCart,
+	loading,
+	error,
+}) => {
 	useEffect(() => {
-		async function fetchProducts() {
-			try {
-				const res = await fetch(`http://127.0.0.1:8000/api/product`, {
-					method: 'GET',
-					headers: {
-						Accept: 'application/json',
-						Authorization: `Bearer ${token}`,
-					},
-				});
-
-				if (res.ok) {
-					const data = await res.json();
-					setProducts(data);
-				} else {
-					console.error('Error fetching products:', res.statusText);
-				}
-			} catch (error) {
-				console.error('An error occurred:', error);
-			}
-		}
 		fetchProducts();
-	}, [token]);
+	}, [fetchProducts]);
 
-	async function AddToCart(e) {
-		const id = e.currentTarget.value;
-		const cartData = { user: 1, product: id, quantity: 1 };
-		try {
-			const res = await fetch(`http://127.0.0.1:8000/api/cart/`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify(cartData),
-			});
-			if (res.ok) {
-				res.json().then((data) => {
-					alert('Added To Cart!');
-				});
-			} else {
-				res.json().then((err) => console.error('Error', err.error));
-			}
-		} catch (error) {
-			console.error('An error occured', error);
-		}
+	if (loading) {
+		return <div className='grid text-center'>Loading...</div>;
+	}
+
+	if (error) {
+		return (
+			<div className='grid text-center'>
+				An error occured try reloading the page
+			</div>
+		);
 	}
 
 	return (
@@ -91,7 +66,7 @@ export default function ProductsList() {
 							</Link>
 							<button
 								value={product.id}
-								onClick={AddToCart}
+								onClick={() => addToCart}
 								className='justify-center w-full grid grid-flow-col p-2'>
 								<FaCartPlus size={24} />
 							</button>
@@ -101,4 +76,17 @@ export default function ProductsList() {
 			</div>
 		</main>
 	);
-}
+};
+
+const mapStateToProps = (state) => ({
+	products: state.products.products,
+	loading: state.products.loading,
+	error: state.products.error,
+	cartItems: state.cart.items,
+});
+
+export default connect(mapStateToProps, {
+	fetchProducts,
+	addToCart,
+	removeFromCart,
+})(ProductList);

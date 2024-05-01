@@ -11,82 +11,82 @@ import {
 	TableFooter,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-export default function ShoppingCart() {
-	const token = JSON.parse(sessionStorage.getItem('token')).access;
-	const [userCart, setUserCart] = useState([]);
+const Cart = ({ cartItems, products }) => {
+	// const token = JSON.parse(sessionStorage.getItem('token')).access;
+	// const [userCart, setUserCart] = useState([]);
 
 	async function handleDecreaseQuantity(e) {
-		const id = e.currentTarget.value;
-		const formData = {};
-		try {
-			const res = await fetch(`http://127.0.0.1:8000/api/cart/${id}/`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify(formData),
-			});
-			if (res.ok) {
-				res.json().then((data) => {
-					alert('Cart Quantity Updated');
-				});
-			} else {
-				res.json().then((err) => console.error('Error', err.error));
-			}
-		} catch (error) {
-			console.error('An error occured', error);
-		}
+		// 	const id = e.currentTarget.value;
+		// 	const formData = {};
+		// 	try {
+		// 		const res = await fetch(`http://127.0.0.1:8000/api/cart/${id}/`, {
+		// 			method: 'PUT',
+		// 			headers: {
+		// 				'Content-Type': 'application/json',
+		// 				Accept: 'application/json',
+		// 				Authorization: `Bearer ${token}`,
+		// 			},
+		// 			body: JSON.stringify(formData),
+		// 		});
+		// 		if (res.ok) {
+		// 			res.json().then((data) => {
+		// 				alert('Cart Quantity Updated');
+		// 			});
+		// 		} else {
+		// 			res.json().then((err) => console.error('Error', err.error));
+		// 		}
+		// 	} catch (error) {
+		// 		console.error('An error occured', error);
+		// 	}
 	}
 
 	async function handleIncreaseQuantity(e) {}
 
 	async function handleRemoveFramCart(e) {
-		const id = e.currentTarget.value;
-		try {
-			const res = await fetch(`http://127.0.0.1:8000/api/cart/${id}`, {
-				method: 'DELETE',
-				headers: {
-					Accept: 'application/json',
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (res.ok) {
-				alert('Item removed from Cart', 'success');
-			} else {
-				console.error('Error:', res.statusText);
-			}
-		} catch (error) {
-			console.error('An error occurred:', error);
-		}
+		// 	const id = e.currentTarget.value;
+		// 	try {
+		// 		const res = await fetch(`http://127.0.0.1:8000/api/cart/${id}`, {
+		// 			method: 'DELETE',
+		// 			headers: {
+		// 				Accept: 'application/json',
+		// 				Authorization: `Bearer ${token}`,
+		// 			},
+		// 		});
+		// 		if (res.ok) {
+		// 			alert('Item removed from Cart', 'success');
+		// 		} else {
+		// 			console.error('Error:', res.statusText);
+		// 		}
+		// 	} catch (error) {
+		// 		console.error('An error occurred:', error);
+		// 	}
 	}
 
-	useEffect(() => {
-		async function fetchCart() {
-			try {
-				const res = await fetch(`http://127.0.0.1:8000/api/cart-view/`, {
-					method: 'GET',
-					headers: {
-						Accept: 'application/json',
-						Authorization: `Bearer ${token}`,
-					},
-				});
+	// useEffect(() => {
+	// 	async function fetchCart() {
+	// 		try {
+	// 			const res = await fetch(`http://127.0.0.1:8000/api/cart-view/`, {
+	// 				method: 'GET',
+	// 				headers: {
+	// 					Accept: 'application/json',
+	// 					Authorization: `Bearer ${token}`,
+	// 				},
+	// 			});
 
-				if (res.ok) {
-					const data = await res.json();
-					setUserCart(data);
-				} else {
-					console.error('Error fetching products:', res.statusText);
-				}
-			} catch (error) {
-				console.error('An error occurred:', error);
-			}
-		}
-		fetchCart();
-	}, [token]);
+	// 			if (res.ok) {
+	// 				const data = await res.json();
+	// 				setUserCart(data);
+	// 			} else {
+	// 				console.error('Error fetching products:', res.statusText);
+	// 			}
+	// 		} catch (error) {
+	// 			console.error('An error occurred:', error);
+	// 		}
+	// 	}
+	// 	fetchCart();
+	// }, [token]);
 
 	return (
 		<main className='grid min-h-screen'>
@@ -104,7 +104,7 @@ export default function ShoppingCart() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{userCart.map((item) => (
+						{cartItems.map((item) => (
 							<TableRow
 								key={item.id}
 								hover={true}>
@@ -175,4 +175,11 @@ export default function ShoppingCart() {
 			</div>
 		</main>
 	);
-}
+};
+
+const mapStateToProps = (state) => ({
+	cartItems: state.cart.items,
+	products: state.products.products,
+});
+
+export default connect(mapStateToProps)(Cart);

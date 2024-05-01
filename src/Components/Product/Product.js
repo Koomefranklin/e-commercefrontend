@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FaCartPlus } from 'react-icons/fa6';
+import { connect } from 'react-redux';
+import { fetchProducts } from '../../Actions/productActions';
+import { addToCart, removeFromCart } from '../../Actions/cartActions';
 
-export default function Product() {
-	const token = JSON.parse(sessionStorage.getItem('token')).access;
+const Product = ({
+	products,
+	fetchProducts,
+	cartItems,
+	addToCart,
+	removeFromCart,
+	loading,
+	error,
+}) => {
 	const { product_id } = useParams();
 	const [product, setProduct] = useState({});
 	const [category, setCategory] = useState(null);
-	const [products, setProducts] = useState([]);
 
 	useEffect(() => {
 		async function fetchProduct() {
 			try {
+				const token = JSON.parse(sessionStorage.getItem('token')).access;
 				const res = await fetch(
 					`http://127.0.0.1:8000/api/product/${product_id}/`,
 					{
@@ -35,55 +45,22 @@ export default function Product() {
 			}
 		}
 		fetchProduct();
-	}, [token, product_id]);
+	}, [product_id]);
 
 	useEffect(() => {
-		async function fetchProducts() {
-			try {
-				const res = await fetch(`http://127.0.0.1:8000/api/product/`, {
-					method: 'GET',
-					headers: {
-						Accept: 'application/json',
-						Authorization: `Bearer ${token}`,
-					},
-				});
-
-				if (res.ok) {
-					const data = await res.json();
-					setProducts(data);
-				} else {
-					console.error('Error fetching product:', res.statusText);
-				}
-			} catch (error) {
-				console.error('An error occurred:', error);
-			}
-		}
 		fetchProducts();
-	}, [token]);
+	}, [fetchProducts]);
 
-	async function AddToCart(e) {
-		const id = e.currentTarget.value;
-		const cartData = { user: 1, product: id, quantity: 1 };
-		try {
-			const res = await fetch(`http://127.0.0.1:8000/api/cart/`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify(cartData),
-			});
-			if (res.ok) {
-				res.json().then((data) => {
-					alert('Added To Cart!');
-				});
-			} else {
-				res.json().then((err) => console.error('Error', err.error));
-			}
-		} catch (error) {
-			console.error('An error occured', error);
-		}
+	if (loading) {
+		return <div className='grid text-center'>Loading...</div>;
+	}
+
+	if (error) {
+		return (
+			<div className='grid text-center'>
+				An error occured try reloading the page
+			</div>
+		);
 	}
 
 	return (
@@ -115,7 +92,7 @@ export default function Product() {
 			<div className='fixed bottom-3 right-3 w-fit grid bg-cyan-950 p-4 rounded-md font-bold justify-center text-white'>
 				<button
 					className='grid grid-flow-col gap-2'
-					onClick={AddToCart}
+					onClick={() => addToCart}
 					value={product.id}>
 					<FaCartPlus
 						size={28}
@@ -153,4 +130,17 @@ export default function Product() {
 			</div>
 		</main>
 	);
-}
+};
+
+const mapStateToProps = (state) => ({
+	products: state.products.products,
+	loading: state.products.loading,
+	error: state.products.error,
+	cartItems: state.cart.items,
+});
+
+export default connect(mapStateToProps, {
+	fetchProducts,
+	addToCart,
+	removeFromCart,
+})(Product);

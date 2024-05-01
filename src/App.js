@@ -7,7 +7,7 @@ import NotFound from './Components/NotFound';
 import ProductsList from './Components/Product/Products';
 import Product from './Components/Product/Product';
 import Profile from './Auth/Profile';
-import ShoppingCart from './Components/Cart';
+import Cart from './Components/Cart';
 import Checkout from './Components/Checkout';
 import Logout from './Auth/Logout';
 import { loginUser, logoutUser } from './Actions/authActions';
@@ -18,16 +18,21 @@ const App = ({ isLoggedIn, loginUser, logoutUser }) => {
 	const [token, setToken] = useState();
 
 	useEffect(() => {
-		try {
-			setToken(JSON.parse(sessionStorage.getItem('token')).access);
-		} catch (err) {
-			console.error('An error occured', err);
+		async function fetchToken() {
+			try {
+				const tokenData = JSON.parse(sessionStorage.getItem('token'));
+				if (tokenData) {
+					const token = tokenData;
+					setToken(token.access);
+					loginUser(token);
+				} else {
+					logoutUser();
+				}
+			} catch (err) {
+				console.error('An error occured', err);
+			}
 		}
-		if (token) {
-			loginUser(token);
-		} else {
-			logoutUser();
-		}
+		fetchToken();
 	}, [isLoggedIn, loginUser, logoutUser]);
 
 	useEffect(() => {
@@ -53,11 +58,12 @@ const App = ({ isLoggedIn, loginUser, logoutUser }) => {
 		}
 
 		fetchUser();
-	}, [token]);
+	}, [token, isLoggedIn, loginUser, logoutUser]);
 
 	return (
 		<Router>
 			<div className='grid min-h-screen w-full'>
+				{!isLoggedIn && <Login />}
 				<div className='grid grid-flow-col sticky h-fit top-0 left-0 w-full p-2 border-b bg-black'>
 					<div className='grid justify-start'>FullStack Ecommerce</div>
 					<div className='grid justify-end grid-flow-col gap-3'>
@@ -66,7 +72,21 @@ const App = ({ isLoggedIn, loginUser, logoutUser }) => {
 							title='User Profile'>
 							{user?.username}
 						</Link>
-						{isLoggedIn ? <Logout /> : <Login />}
+						{isLoggedIn && <Logout />}
+					</div>
+				</div>
+				<div className='grid grid-flow-col sticky h-fit top-0 left-0 w-full p-2 border-b bg-black'>
+					<div className='grid justify-center grid-flow-col gap-3'>
+						<Link
+							to='/products'
+							title='Products'>
+							Products
+						</Link>
+						<Link
+							to='/cart'
+							title='Cart'>
+							Cart
+						</Link>
 					</div>
 				</div>
 				<Routes>
@@ -89,7 +109,7 @@ const App = ({ isLoggedIn, loginUser, logoutUser }) => {
 					/>
 					<Route
 						path='/cart'
-						element={<ShoppingCart />}
+						element={<Cart />}
 					/>
 					<Route
 						path='/checkout'
