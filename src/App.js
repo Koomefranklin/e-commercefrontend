@@ -62,61 +62,64 @@ const App = ({ isLoggedIn, loginUser, logoutUser }) => {
 
 	return (
 		<Router>
-			<div className='grid min-h-screen w-full'>
-				{!isLoggedIn && <Login />}
-				<div className='grid grid-flow-col sticky h-fit top-0 left-0 w-full p-2 border-b bg-black'>
-					<div className='grid justify-start'>FullStack Ecommerce</div>
-					<div className='grid justify-end grid-flow-col gap-3'>
-						<Link
-							to='/profile'
-							title='User Profile'>
-							{user?.username}
-						</Link>
-						{isLoggedIn && <Logout />}
+			{isLoggedIn ? (
+				<div className='grid min-h-screen w-full'>
+					<div className='grid sticky h-fit top-0 left-0 w-full'>
+						<div className='grid grid-flow-col  p-2 border-b bg-black'>
+							<div className='grid justify-start'>FullStack Ecommerce</div>
+							<div className='grid justify-end grid-flow-col gap-3'>
+								<Link
+									to='/profile'
+									title='User Profile'>
+									{user?.username}
+								</Link>
+								<Logout />
+							</div>
+						</div>
+						<div className='grid justify-center grid-flow-col gap-3 border-b'>
+							<Link
+								to='/products'
+								title='Products'>
+								Products
+							</Link>
+							<Link
+								to='/cart'
+								title='Cart'>
+								Cart
+							</Link>
+						</div>
 					</div>
+					<Routes>
+						<Route
+							path='/'
+							element={<ProductsList />}
+						/>
+						<Route element={<NotFound />} />
+						<Route
+							path='/products'
+							element={<ProductsList />}
+						/>
+						<Route
+							path={`product/:product_id`}
+							element={<Product />}
+						/>
+						<Route
+							path='/profile'
+							element={<Profile />}
+						/>
+						<Route
+							path='/cart'
+							element={<Cart />}
+						/>
+						<Route
+							path='/checkout'
+							element={<Checkout />}
+						/>
+					</Routes>
 				</div>
-				<div className='grid grid-flow-col sticky h-fit top-0 left-0 w-full p-2 border-b bg-black'>
-					<div className='grid justify-center grid-flow-col gap-3'>
-						<Link
-							to='/products'
-							title='Products'>
-							Products
-						</Link>
-						<Link
-							to='/cart'
-							title='Cart'>
-							Cart
-						</Link>
-					</div>
-				</div>
-				<Routes>
-					<Route
-						path='/'
-						element={<Dashboard />}
-					/>
-					<Route element={<NotFound />} />
-					<Route
-						path='/products'
-						element={<ProductsList />}
-					/>
-					<Route
-						path={`product/:product_id`}
-						element={<Product />}
-					/>
-					<Route
-						path='/profile'
-						element={<Profile />}
-					/>
-					<Route
-						path='/cart'
-						element={<Cart />}
-					/>
-					<Route
-						path='/checkout'
-						element={<Checkout />}
-					/>
-				</Routes>
-			</div>
+			) : (
+				<Login />
+			)}
 		</Router>
 	);
 };
