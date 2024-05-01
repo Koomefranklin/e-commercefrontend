@@ -12,81 +12,49 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import {
+	fetchCartItems,
+	addToCart,
+	removeFromCart,
+} from '../Actions/cartActions';
+import { fetchProducts } from '../Actions/productActions';
 
-const Cart = ({ cartItems, products }) => {
-	// const token = JSON.parse(sessionStorage.getItem('token')).access;
-	// const [userCart, setUserCart] = useState([]);
+const Cart = ({
+	products,
+	fetchProducts,
+	items,
+	loading,
+	error,
+	fetchCartItems,
+	removeFromCart,
+}) => {
+	useEffect(() => {
+		fetchCartItems();
+	}, [fetchCartItems]);
 
-	async function handleDecreaseQuantity(e) {
-		// 	const id = e.currentTarget.value;
-		// 	const formData = {};
-		// 	try {
-		// 		const res = await fetch(`http://127.0.0.1:8000/api/cart/${id}/`, {
-		// 			method: 'PUT',
-		// 			headers: {
-		// 				'Content-Type': 'application/json',
-		// 				Accept: 'application/json',
-		// 				Authorization: `Bearer ${token}`,
-		// 			},
-		// 			body: JSON.stringify(formData),
-		// 		});
-		// 		if (res.ok) {
-		// 			res.json().then((data) => {
-		// 				alert('Cart Quantity Updated');
-		// 			});
-		// 		} else {
-		// 			res.json().then((err) => console.error('Error', err.error));
-		// 		}
-		// 	} catch (error) {
-		// 		console.error('An error occured', error);
-		// 	}
+	useEffect(() => {
+		fetchProducts();
+	}, [fetchProducts]);
+
+	const totalPrice = items.reduce((total, item) => {
+		const product = products.find((product) => product.id === item.product.id);
+		const itemTotalPrice = parseFloat(
+			product ? product.price * item.quantity : 0
+		);
+		return total + itemTotalPrice;
+	}, 0);
+
+	if (loading) {
+		return <div className='grid text-center'>Loading...</div>;
 	}
 
-	async function handleIncreaseQuantity(e) {}
-
-	async function handleRemoveFramCart(e) {
-		// 	const id = e.currentTarget.value;
-		// 	try {
-		// 		const res = await fetch(`http://127.0.0.1:8000/api/cart/${id}`, {
-		// 			method: 'DELETE',
-		// 			headers: {
-		// 				Accept: 'application/json',
-		// 				Authorization: `Bearer ${token}`,
-		// 			},
-		// 		});
-		// 		if (res.ok) {
-		// 			alert('Item removed from Cart', 'success');
-		// 		} else {
-		// 			console.error('Error:', res.statusText);
-		// 		}
-		// 	} catch (error) {
-		// 		console.error('An error occurred:', error);
-		// 	}
+	if (error) {
+		return (
+			<div className='grid text-center'>
+				An error occured try reloading the page
+			</div>
+		);
 	}
-
-	// useEffect(() => {
-	// 	async function fetchCart() {
-	// 		try {
-	// 			const res = await fetch(`http://127.0.0.1:8000/api/cart-view/`, {
-	// 				method: 'GET',
-	// 				headers: {
-	// 					Accept: 'application/json',
-	// 					Authorization: `Bearer ${token}`,
-	// 				},
-	// 			});
-
-	// 			if (res.ok) {
-	// 				const data = await res.json();
-	// 				setUserCart(data);
-	// 			} else {
-	// 				console.error('Error fetching products:', res.statusText);
-	// 			}
-	// 		} catch (error) {
-	// 			console.error('An error occurred:', error);
-	// 		}
-	// 	}
-	// 	fetchCart();
-	// }, [token]);
 
 	return (
 		<main className='grid min-h-screen'>
@@ -104,7 +72,7 @@ const Cart = ({ cartItems, products }) => {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{cartItems.map((item) => (
+						{items.map((item) => (
 							<TableRow
 								key={item.id}
 								hover={true}>
@@ -122,42 +90,12 @@ const Cart = ({ cartItems, products }) => {
 								<TableCell>{item.quantity}</TableCell>
 								<TableCell>{item.product.price * item.quantity}</TableCell>
 								<TableCell>
-									<ButtonGroup className='gap-2'>
-										<Tooltip
-											title='Decrease Quantity'
-											placement='top'
-											className='bg-red-500 rounded cursor-pointer'
-											onClick={handleDecreaseQuantity}
-											value={item.id}>
-											<FaMinus
-												size={24}
-												color='white'
-												className=''
-											/>
-										</Tooltip>
-										<Tooltip
-											title='Increase Quantity'
-											className='bg-green-500 rounded cursor-pointer'
-											onClick={handleIncreaseQuantity}
-											value={item.id}>
-											<FaPlus
-												size={24}
-												color='white'
-												className=''
-											/>
-										</Tooltip>
-										<button
-											title='Remove from cart'
-											className='bg-red-600 rounded cursor-pointer'
-											onClick={handleRemoveFramCart}
-											value={item.id}>
-											<FaRegTrashCan
-												size={24}
-												color='white'
-												className=''
-											/>
-										</button>
-									</ButtonGroup>
+									<FaRegTrashCan
+										size={24}
+										onClick={() => removeFromCart(item.id)}
+										color='red'
+										className='cursor-pointer'
+									/>
 								</TableCell>
 							</TableRow>
 						))}
@@ -165,21 +103,32 @@ const Cart = ({ cartItems, products }) => {
 					<TableFooter>
 						<TableRow className='flex justify-center'>
 							<TableCell className='font-bold'>Total amount:</TableCell>
-							<TableCell className='font-bold text-lg'>{''}</TableCell>
+							<TableCell></TableCell>
+							<TableCell></TableCell>
+							<TableCell className='font-bold text-lg'>{totalPrice}</TableCell>
 						</TableRow>
 					</TableFooter>
 				</Table>
 			</div>
-			<div className='grid fixed bottom-5 right-3 p-2 bg-green-600 rounded-md font-bold uppercase'>
-				Checkout
+			<div className='grid fixed bottom-5 right-3 p-2 bg-green-600 rounded-md font-bold uppercase cursor-pointer'>
+				<Link to='/checkout'>Checkout</Link>
 			</div>
 		</main>
 	);
 };
 
 const mapStateToProps = (state) => ({
-	cartItems: state.cart.items,
 	products: state.products.products,
+	items: state.cart.items,
+	loading: state.cart.loading,
+	error: state.cart.error,
 });
 
-export default connect(mapStateToProps)(Cart);
+const mapDispatchToProps = (dispatch) => ({
+	fetchCartItems: () => dispatch(fetchCartItems()),
+	addToCart: (productId) => dispatch(addToCart(productId)),
+	removeFromCart: (cartId) => dispatch(removeFromCart(cartId)),
+	fetchProducts: () => dispatch(fetchProducts()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Cart);

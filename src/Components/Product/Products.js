@@ -1,22 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaCartPlus } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { fetchProducts } from '../../Actions/productActions';
-import { addToCart, removeFromCart } from '../../Actions/cartActions';
+import { addToCart } from '../../Actions/cartActions';
+import Fuse from 'fuse.js';
 
 const ProductList = ({
 	products,
 	fetchProducts,
 	cartItems,
 	addToCart,
-	removeFromCart,
 	loading,
 	error,
 }) => {
+	const options = {
+		includeScore: true,
+		keys: ['name', 'description', 'category'],
+	};
 	useEffect(() => {
 		fetchProducts();
 	}, [fetchProducts]);
+	const [displayProducts, setDisplayProducts] = useState(products);
+	const fuse = new Fuse(products, options);
+	const [searchProduct, setSearchProduct] = useState([]);
 
 	if (loading) {
 		return <div className='grid text-center'>Loading...</div>;
@@ -30,11 +37,33 @@ const ProductList = ({
 		);
 	}
 
+	function handleSearch(e) {
+		setSearchProduct(e.target.value);
+		const foundProducts = fuse
+			.search(searchProduct)
+			.filter((element) => element.score < 0.3)
+			.map((element) => element.item);
+		if (searchProduct.length === 0) {
+			setDisplayProducts(products);
+		} else {
+			setDisplayProducts(foundProducts);
+		}
+	}
+
 	return (
 		<main className='grid'>
 			<div className='grid'>
+				<form className=''>
+					<label htmlFor='query'>Search for products:</label>
+					<input
+						type='search'
+						id='query'
+						className='bg-gray-500 rounded-md p-2'
+						onKeyDown={handleSearch}
+					/>
+				</form>
 				<div className='flex flex-wrap w-full h-max overflow-x-hidden overflow-y-auto gap-2 my-2'>
-					{products.map((product) => (
+					{displayProducts.map((product) => (
 						<div
 							className='grid bg-black rounded container w-auto md:w-80 border-2 border-gray-800'
 							key={product.id}>
@@ -66,7 +95,7 @@ const ProductList = ({
 							</Link>
 							<button
 								value={product.id}
-								onClick={() => addToCart}
+								onClick={() => addToCart(product.id)}
 								className='justify-center w-full grid grid-flow-col p-2'>
 								<FaCartPlus size={24} />
 							</button>
@@ -85,8 +114,9 @@ const mapStateToProps = (state) => ({
 	cartItems: state.cart.items,
 });
 
-export default connect(mapStateToProps, {
-	fetchProducts,
-	addToCart,
-	removeFromCart,
-})(ProductList);
+const mapDispatchToProps = (dispatch) => ({
+	addToCart: (productId) => dispatch(addToCart(productId)),
+	fetchProducts: () => dispatch(fetchProducts()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductList);

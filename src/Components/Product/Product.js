@@ -3,14 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import { FaCartPlus } from 'react-icons/fa6';
 import { connect } from 'react-redux';
 import { fetchProducts } from '../../Actions/productActions';
-import { addToCart, removeFromCart } from '../../Actions/cartActions';
+import { addToCart } from '../../Actions/cartActions';
 
 const Product = ({
 	products,
 	fetchProducts,
 	cartItems,
 	addToCart,
-	removeFromCart,
 	loading,
 	error,
 }) => {
@@ -142,5 +141,4 @@ const mapStateToProps = (state) => ({
 export default connect(mapStateToProps, {
 	fetchProducts,
 	addToCart,
-	removeFromCart,
 })(Product);
